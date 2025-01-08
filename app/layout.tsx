@@ -1,5 +1,6 @@
 import { Header } from '@/app/components/Header'
 import { Footer } from '@/app/components/Footer'
+import StoreProvider from './providers/StoreProvider'
 import './globals.css'
 
 export default function RootLayout({
@@ -10,11 +11,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">
-          {children}
-        </main>
-        <Footer />
+        <StoreProvider>
+          <Header />
+          <main className="flex-grow">
+            {children}
+          </main>
+          <Footer />
+        </StoreProvider>
       </body>
     </html>
   )

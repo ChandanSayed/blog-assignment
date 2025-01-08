@@ -1,23 +1,29 @@
 import { Banner } from '@/app/components/Banner'
 import { BlogPost } from '@/app/components/BlogPost'
-import { getPosts } from '@/lib/blog'
+import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { Post } from '@prisma/client'
 
 export default async function Home() {
-  const posts = await getPosts()
-  const recentPosts: Post[] = posts.slice(0, 8)
+  const posts = await prisma.post.findMany({
+    include: { author: true },
+    take: 8,
+    orderBy: { id: 'desc' },
+  })
 
   return (
     <main>
       <Banner />
       <div className="container mx-auto px-4 py-12">
         <h2 className="text-3xl font-bold mb-8">Recent Posts</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {recentPosts.map((post: Post) => (
-            <BlogPost key={post.id} post={post} />
-          ))}
-        </div>
+        {posts.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {posts.map((post) => (
+              <BlogPost key={post.id} post={post} />
+            ))}
+          </div>
+        ) : (
+          <p className="text-center text-gray-600">No posts yet.</p>
+        )}
         <div className="text-center mt-8">
           <Link 
             href="/posts" 
