@@ -1,7 +1,20 @@
 import { BlogPost } from '@/app/components/BlogPost'
 import { prisma } from '@/lib/prisma'
 import { Pagination } from '@/app/components/Pagination'
-import { notFound } from 'next/navigation'
+import { notFound, redirect } from 'next/navigation'
+import { cookies } from 'next/headers'
+
+async function getUserFromCookie() {
+  const cookieStore = cookies()
+  const userJson = cookieStore.get('user-storage')?.value
+  if (!userJson) return null
+  
+  try {
+    return JSON.parse(userJson).state
+  } catch {
+    return null
+  }
+}
 
 export default async function UserPosts({
   params,
@@ -10,6 +23,17 @@ export default async function UserPosts({
   params: { id: string }
   searchParams: { page?: string }
 }) {
+  const userData = await getUserFromCookie()
+  
+  if (!userData?.isAuthenticated) {
+    redirect('/login')
+  }
+
+  // For My Posts, only allow access to own posts
+  if (userData.user.id !== Number(params.id)) {
+    redirect('/posts')
+  }
+
   const page = Number(searchParams.page) || 1
   const pageSize = 6
   const skip = (page - 1) * pageSize

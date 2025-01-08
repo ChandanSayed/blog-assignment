@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect } from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/store/userStore'
@@ -7,11 +8,17 @@ import { createPost } from '@/lib/blog'
 
 export default function CreatePost() {
   const router = useRouter()
-  const { user } = useUserStore()
+  const { user, isAuthenticated } = useUserStore()
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace('/login')
+    }
+  }, [isAuthenticated, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

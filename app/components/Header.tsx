@@ -3,10 +3,17 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useUserStore } from '@/store/userStore'
+import { useLoadingStore } from '@/store/loadingStore'
 
 export function Header() {
   const { user, isAuthenticated, logout } = useUserStore()
+  const isHydrating = useLoadingStore((state) => state.isHydrating)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  // Don't render anything while hydrating to prevent flash
+  if (isHydrating) {
+    return <div className="h-16 bg-white shadow-md" /> // Placeholder height
+  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)

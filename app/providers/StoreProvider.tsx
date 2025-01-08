@@ -1,7 +1,8 @@
 'use client'
 
-import { useRef } from 'react'
+import { useRef, useEffect } from 'react'
 import { useUserStore } from '@/store/userStore'
+import { useLoadingStore } from '@/store/loadingStore'
 
 export default function StoreProvider({
   children,
@@ -9,10 +10,15 @@ export default function StoreProvider({
   children: React.ReactNode
 }) {
   const initialized = useRef(false)
-  if (!initialized.current) {
-    initialized.current = true
-    useUserStore.persist.rehydrate()
-  }
+  const setIsHydrating = useLoadingStore((state) => state.setIsHydrating)
+
+  useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true
+      useUserStore.persist.rehydrate()
+      setIsHydrating(false)
+    }
+  }, [setIsHydrating])
 
   return <>{children}</>
 } 
