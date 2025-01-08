@@ -1,38 +1,37 @@
-import { PrismaClient, User } from '@prisma/client'
-import { hash, compare } from 'bcryptjs'
+import { config } from './config'
 
-const prisma = new PrismaClient()
-
-export async function register(email: string, password: string, name: string) {
-  const hashedPassword = await hash(password, 10)
-  
-  try {
-    const user = await prisma.user.create({
-      data: {
-        email,
-        password: hashedPassword,
-        name,
-      },
-    })
-    
-    // Remove password from response
-    const { password: _, ...userWithoutPassword } = user
-    return { user: userWithoutPassword }
-  } catch (error) {
-    throw new Error('Registration failed')
-  }
-}
+const baseUrl = config.baseUrl
 
 export async function login(email: string, password: string) {
-  const user = await prisma.user.findUnique({
-    where: { email },
+  const res = await fetch(`${baseUrl}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password }),
   })
 
-  if (!user) throw new Error('User not found')
+  if (!res.ok) {
+    const error = await res.json()
+    throw new Error(error.error || 'Authentication failed')
+  }
 
-  const isValid = await compare(password, user.password)
-  if (!isValid) throw new Error('Invalid password')
+  return res.json()
+}
 
-  const { password: _, ...userWithoutPassword } = user
-  return { user: userWithoutPassword }
+export async function register(email: string, password: string, name: string) {
+  const res = await fetch(`${baseUrl}/api/auth/register`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ email, password, name }),
+  })
+
+  if (!res.ok) {
+    const error = await res.json()
+    throw new Error(error.error || 'Registration failed')
+  }
+
+  return res.json()
 } 
