@@ -19,6 +19,12 @@ export async function POST(request: Request) {
 
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: true
+      }
     })
     
     console.log('User found:', user ? 'Yes' : 'No')
@@ -40,10 +46,17 @@ export async function POST(request: Request) {
       )
     }
 
-    const { password: _password, ...userWithoutPassword } = user
-    console.log('Login successful for user:', userWithoutPassword)
+    const userResponse = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        name: true
+      }
+    })
+    console.log('Login successful for user:', userResponse)
     
-    return NextResponse.json({ user: userWithoutPassword })
+    return NextResponse.json({ user: userResponse })
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
@@ -53,4 +66,4 @@ export async function POST(request: Request) {
   } finally {
     await prisma.$disconnect()
   }
-} 
+}

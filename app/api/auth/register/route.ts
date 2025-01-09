@@ -29,12 +29,17 @@ export async function POST(request: Request) {
         name,
         password: hashedPassword,
       },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        password: false
+      }
     });
     
     console.log("User created successfully:", JSON.stringify(user, null, 2));
 
-    const { password: _password, ...userWithoutPassword } = user;
-    return NextResponse.json({ user: userWithoutPassword });
+    return NextResponse.json({ user });
   } catch (error) {
     console.error("Registration error:", error);
     return NextResponse.json(
