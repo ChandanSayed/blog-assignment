@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/store/userStore'
 import { useBlogStore } from '@/store/blogStore'
-import { createPost, updatePost, deletePost } from '@/lib/blog'
+import {  updatePost, deletePost } from '@/lib/blog'
 import Link from 'next/link'
 import { Post, User } from '@prisma/client'
 

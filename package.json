@@ -7,9 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "prisma-seed": "tsx prisma/seed.ts",
-    "view-db": "tsx scripts/view-db.ts",
-    "clear-db": "tsx scripts/clear-seed.ts"
+    "prisma-seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",

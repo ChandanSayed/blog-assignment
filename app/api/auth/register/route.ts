@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     
     console.log("User created successfully:", JSON.stringify(user, null, 2));
 
-    const { password: _, ...userWithoutPassword } = user;
+    const { password: _password, ...userWithoutPassword } = user;
     return NextResponse.json({ user: userWithoutPassword });
   } catch (error) {
     console.error("Registration error:", error);

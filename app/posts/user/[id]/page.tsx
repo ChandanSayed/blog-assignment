@@ -29,7 +29,6 @@ export default async function UserPosts({
     redirect('/login')
   }
 
-  // For My Posts, only allow access to own posts
   if (userData.user.id !== Number(params.id)) {
     redirect('/posts')
   }
@@ -64,7 +63,7 @@ export default async function UserPosts({
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{user.name}'s Posts</h1>
+          <h1 className="text-4xl font-bold mb-2">{user.name}&apos;s Posts</h1>
           <p className="text-gray-600">Total posts: {totalPosts}</p>
         </div>
 

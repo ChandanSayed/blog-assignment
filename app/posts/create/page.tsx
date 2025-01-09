@@ -9,8 +9,14 @@ import { createPost } from '@/lib/blog'
 export default function CreatePost() {
   const router = useRouter()
   const { user, isAuthenticated } = useUserStore()
-  const [title, setTitle] = useState('')
-  const [content, setContent] = useState('')
+  const [formData, setFormData] = useState({
+    title: '',
+    content: ''
+  })
+  const [formErrors, setFormErrors] = useState({
+    title: '',
+    content: ''
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -20,10 +26,54 @@ export default function CreatePost() {
     }
   }, [isAuthenticated, router])
 
+  const validateForm = () => {
+    let isValid = true
+    const errors = {
+      title: '',
+      content: ''
+    }
+
+    if (!formData.title.trim()) {
+      errors.title = 'Title is required'
+      isValid = false
+    } else if (formData.title.length < 3) {
+      errors.title = 'Title must be at least 3 characters long'
+      isValid = false
+    }
+
+    if (!formData.content.trim()) {
+      errors.content = 'Content is required'
+      isValid = false
+    } else if (formData.content.length < 10) {
+      errors.content = 'Content must be at least 10 characters long'
+      isValid = false
+    }
+
+    setFormErrors(errors)
+    return isValid
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+    // Clear error when user starts typing
+    setFormErrors(prev => ({
+      ...prev,
+      [name]: ''
+    }))
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!user) {
       setError('You must be logged in to create a post')
+      return
+    }
+
+    if (!validateForm()) {
       return
     }
 
@@ -32,8 +82,8 @@ export default function CreatePost() {
 
     try {
       await createPost({
-        title,
-        content,
+        title: formData.title,
+        content: formData.content,
         authorId: user.id,
         published: true,
       })
@@ -53,6 +103,8 @@ export default function CreatePost() {
     return null
   }
 
+  const isFormValid = formData.title.trim().length >= 3 && formData.content.trim().length >= 10
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="max-w-2xl mx-auto">
@@ -70,13 +122,17 @@ export default function CreatePost() {
             </label>
             <input
               id="title"
+              name="title"
               type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={formData.title}
+              onChange={handleChange}
               className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
               required
               disabled={isLoading}
             />
+            {formErrors.title && (
+              <p className="mt-1 text-sm text-red-600">{formErrors.title}</p>
+            )}
           </div>
 
           <div>
@@ -85,19 +141,23 @@ export default function CreatePost() {
             </label>
             <textarea
               id="content"
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
+              name="content"
+              value={formData.content}
+              onChange={handleChange}
               className="w-full p-2 border rounded h-64 focus:ring-2 focus:ring-blue-500"
               required
               disabled={isLoading}
             />
+            {formErrors.content && (
+              <p className="mt-1 text-sm text-red-600">{formErrors.content}</p>
+            )}
           </div>
 
           <div className="flex gap-4">
             <button
               type="submit"
-              disabled={isLoading}
-              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+              disabled={isLoading || !isFormValid}
+              className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isLoading ? 'Creating...' : 'Create Post'}
             </button>
@@ -114,4 +174,4 @@ export default function CreatePost() {
       </div>
     </div>
   )
-} 
+}

@@ -40,7 +40,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const { password: _, ...userWithoutPassword } = user
+    const { password: _password, ...userWithoutPassword } = user
     console.log('Login successful for user:', userWithoutPassword)
     
     return NextResponse.json({ user: userWithoutPassword })
