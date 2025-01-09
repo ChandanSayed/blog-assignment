@@ -17,8 +17,8 @@ const customJestConfig = {
   moduleDirectories: ['node_modules', '<rootDir>'],
   testMatch: ['**/__tests__/**/*.test.[jt]s?(x)'],
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['next/babel'] }],
-  },
+    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest']
+  }
 }
 
 module.exports = createJestConfig(customJestConfig)
