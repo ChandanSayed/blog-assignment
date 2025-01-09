@@ -72,7 +72,6 @@ describe('CreatePost', () => {
     // Enter short title and content
     const titleInput = screen.getByLabelText('Title')
     const contentInput = screen.getByLabelText('Content')
-    const submitButton = screen.getByRole('button', { name: /create post/i })
 
     // First make the button enabled with valid input
     fireEvent.change(titleInput, {
