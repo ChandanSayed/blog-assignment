@@ -57,11 +57,25 @@ export default async function Posts({
     )
   } catch (error) {
     console.error('Error fetching posts:', error)
+    // Log detailed error information
+    if (error instanceof Error) {
+      console.error('Error name:', error.name)
+      console.error('Error message:', error.message)
+      console.error('Error stack:', error.stack)
+    }
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-red-500 mb-4">Error</h1>
           <p className="text-gray-600">Failed to load posts. Please try again later.</p>
+          {process.env.NODE_ENV === 'development' && error instanceof Error && (
+            <div className="mt-4 p-4 bg-red-100 rounded text-left">
+              <p className="font-mono text-sm text-red-700">{error.message}</p>
+              <pre className="mt-2 whitespace-pre-wrap font-mono text-xs text-red-600">
+                {error.stack}
+              </pre>
+            </div>
+          )}
         </div>
       </div>
     )
