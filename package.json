@@ -4,12 +4,11 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "npm run db:prepare && next build",
     "start": "next start",
     "lint": "next lint",
-    "prisma-seed": "tsx prisma/seed.ts",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "db:prepare": "prisma generate && prisma migrate deploy && prisma db push",
+    "prisma:seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",

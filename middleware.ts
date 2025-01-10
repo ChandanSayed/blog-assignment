@@ -2,26 +2,16 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname
-  const isAuthRoute = path === '/login' || path === '/register'
-  const isProtectedRoute = path.startsWith('/posts/create') || path.includes('/posts/user/')
+  // Add CORS headers
+  const response = NextResponse.next()
   
-  const userJson = request.cookies.get('user-storage')?.value
-  const isAuthenticated = userJson ? JSON.parse(userJson).state.isAuthenticated : false
-
-  // Redirect authenticated users away from login/register
-  if (isAuthRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL('/', request.url))
-  }
-
-  // Redirect unauthenticated users away from protected routes
-  if (isProtectedRoute && !isAuthenticated) {
-    return NextResponse.redirect(new URL('/login', request.url))
-  }
-
-  return NextResponse.next()
+  response.headers.set('Access-Control-Allow-Origin', '*')
+  response.headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  response.headers.set('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  
+  return response
 }
 
 export const config = {
-  matcher: ['/login', '/register', '/posts/create', '/posts/user/:path*']
+  matcher: '/api/:path*',
 } 
