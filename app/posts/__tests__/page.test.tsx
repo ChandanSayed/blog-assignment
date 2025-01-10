@@ -27,7 +27,7 @@ jest.mock('@/lib/prisma', () => ({
 
 // Mock BlogPost component with unique identifiers
 jest.mock('@/app/components/BlogPost', () => ({
-  BlogPost: ({ post }: any) => (
+  BlogPost: ({ post }: { post: { id: number; title: string; content: string; author: { name: string } } }) => (
     <article data-testid={`post-${post.id}`}>
       <h2>{post.title}</h2>
       <p>{post.content}</p>

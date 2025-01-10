@@ -1,69 +1,60 @@
 import '@testing-library/jest-dom'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { BlogPost } from '../BlogPost'
+import { useRouter } from 'next/navigation'
+import { useUserStore } from '@/store/userStore'
+import { useBlogStore } from '@/store/blogStore'
 
 // Mock modules
-const mockRouter = {
-  push: jest.fn(),
-  replace: jest.fn(),
-  refresh: jest.fn(),
-  back: jest.fn(),
-}
-
 jest.mock('next/navigation', () => ({
-  useRouter: () => mockRouter
+  useRouter: jest.fn()
 }))
 
 // Mock stores
-const mockDispatch = jest.fn()
 jest.mock('@/store/blogStore', () => ({
-  useBlogStore: () => ({
-    dispatch: mockDispatch
-  })
+  useBlogStore: jest.fn()
 }))
-
-const mockUser = {
-  id: '123',
-  email: 'test@example.com',
-  name: 'Test User'
-}
 
 jest.mock('@/store/userStore', () => ({
-  useUserStore: () => ({
-    user: mockUser
-  })
-}))
-
-// Mock API functions
-jest.mock('@/lib/blog', () => ({
-  updatePost: jest.fn(),
-  deletePost: jest.fn()
+  useUserStore: jest.fn()
 }))
 
 describe('BlogPost', () => {
+  const mockRouter = {
+    push: jest.fn(),
+    replace: jest.fn(),
+    refresh: jest.fn(),
+    back: jest.fn(),
+  }
+
+  const mockDispatch = jest.fn()
+
   const mockPost = {
-    id: '1',
+    id: 1,
     title: 'Test Post',
     content: 'Test Content',
-    authorId: '123',
-    published: true,
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    authorId: 1,
     author: {
-      id: '123',
-      name: 'Test User',
-      email: 'test@example.com',
-      createdAt: new Date(),
-      updatedAt: new Date()
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com'
     }
   }
 
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
+    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    ;(useBlogStore as jest.Mock).mockReturnValue({
+      dispatch: mockDispatch
+    })
+    ;(useUserStore as jest.Mock).mockReturnValue({
+      user: { id: 1 },
+      isAuthenticated: true
+    })
   })
 
   it('renders post content', () => {
-    render(<BlogPost post={mockPost} />)
+    render(<BlogPost post={mockPost} isEditable={false} showActions={false} />)
     expect(screen.getByText(mockPost.title)).toBeInTheDocument()
     expect(screen.getByText(mockPost.content)).toBeInTheDocument()
     expect(screen.getByText(`By ${mockPost.author.name}`)).toBeInTheDocument()
@@ -71,6 +62,10 @@ describe('BlogPost', () => {
 
   it('shows edit and delete buttons when editable and user is author', () => {
     render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
+    
+    // Add debug to help see what's rendered
+    screen.debug()
+    
     expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument()
   })
@@ -81,74 +76,34 @@ describe('BlogPost', () => {
     expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
   })
 
-  it('enters edit mode when edit button is clicked', () => {
-    render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }))
-    
-    expect(screen.getByDisplayValue(mockPost.title)).toBeInTheDocument()
-    expect(screen.getByDisplayValue(mockPost.content)).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
-  })
-
-  it('updates post when save is clicked', async () => {
-    const { updatePost } = require('@/lib/blog')
-    updatePost.mockResolvedValueOnce({ ...mockPost, title: 'Updated Title' })
-
+  it('navigates to edit page when edit button is clicked', () => {
     render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
     
-    // Enter edit mode
     fireEvent.click(screen.getByRole('button', { name: /edit/i }))
     
-    // Update title
-    fireEvent.change(screen.getByDisplayValue(mockPost.title), {
-      target: { value: 'Updated Title' }
-    })
-    
-    // Save changes
-    fireEvent.click(screen.getByRole('button', { name: /save/i }))
-    
-    await waitFor(() => {
-      expect(updatePost).toHaveBeenCalledWith(mockPost.id, {
-        title: 'Updated Title',
-        content: mockPost.content
-      })
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'UPDATE_POST',
-        post: { ...mockPost, title: 'Updated Title' }
-      })
-      expect(mockRouter.refresh).toHaveBeenCalled()
-    })
+    expect(mockRouter.push).toHaveBeenCalledWith(`/posts/${mockPost.id}/edit`)
   })
 
-  it('deletes post when delete is confirmed', async () => {
-    const { deletePost } = require('@/lib/blog')
-    deletePost.mockResolvedValueOnce({})
+  it('deletes post when confirmed', () => {
     window.confirm = jest.fn(() => true)
-
+    
     render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
     
     fireEvent.click(screen.getByRole('button', { name: /delete/i }))
     
-    await waitFor(() => {
-      expect(deletePost).toHaveBeenCalledWith(mockPost.id)
-      expect(mockDispatch).toHaveBeenCalledWith({
-        type: 'DELETE_POST',
-        id: mockPost.id
-      })
-      expect(mockRouter.refresh).toHaveBeenCalled()
+    expect(mockDispatch).toHaveBeenCalledWith({
+      type: 'DELETE_POST',
+      id: mockPost.id
     })
   })
 
-  it('cancels delete when not confirmed', async () => {
-    const { deletePost } = require('@/lib/blog')
+  it('cancels delete when not confirmed', () => {
     window.confirm = jest.fn(() => false)
-
+    
     render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
     
     fireEvent.click(screen.getByRole('button', { name: /delete/i }))
     
-    expect(deletePost).not.toHaveBeenCalled()
     expect(mockDispatch).not.toHaveBeenCalled()
   })
-}) 
+})

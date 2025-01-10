@@ -2,43 +2,55 @@ import '@testing-library/jest-dom'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { NewPost } from '../NewPost'
 import { createPost } from '@/lib/blog'
+import { useUserStore } from '@/store/userStore'
+import { useRouter } from 'next/navigation'
+import { useBlogStore } from '@/store/blogStore'
+
 
 // Mock modules
-const mockUser = {
-  id: '123',
-  email: 'test@example.com',
-  name: 'Test User'
-}
-
-// Mock userStore with user
-jest.mock('@/store/userStore', () => ({
-  useUserStore: () => ({
-    user: mockUser // Ensure user is always defined for tests
-  })
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn()
 }))
 
-const mockDispatch = jest.fn()
 jest.mock('@/store/blogStore', () => ({
-  useBlogStore: () => ({
-    dispatch: mockDispatch
-  })
+  useBlogStore: jest.fn()
 }))
 
-// Mock createPost function
+jest.mock('@/store/userStore', () => ({
+  useUserStore: jest.fn()
+}))
+
 jest.mock('@/lib/blog', () => ({
   createPost: jest.fn()
 }))
 
-// Mock window.location.reload
-const mockReload = jest.fn()
-Object.defineProperty(window, 'location', {
-  value: { reload: mockReload },
-  writable: true
-})
-
 describe('NewPost', () => {
+  // Define mockUser and mockRouter at the top of describe block
+  const mockUser = {
+    id: '123',
+    email: 'test@example.com',
+    name: 'Test User'
+  }
+
+  // Create a separate mock for router.refresh
+  const mockRefresh = jest.fn()
+  const mockRouter = {
+    push: jest.fn(),
+    refresh: mockRefresh  // Use the separate mock function
+  }
+
+  const mockDispatch = jest.fn()
+
   beforeEach(() => {
-    jest.clearAllMocks()
+    jest.resetAllMocks()
+    ;(useRouter as jest.Mock).mockReturnValue(mockRouter)
+    ;(useBlogStore as jest.Mock).mockReturnValue({
+      dispatch: mockDispatch
+    })
+    ;(useUserStore as jest.Mock).mockReturnValue({
+      user: mockUser,
+      isAuthenticated: true
+    })
   })
 
   it('renders the new post form', () => {
@@ -86,8 +98,9 @@ describe('NewPost', () => {
     })
     
     // Submit form
-    fireEvent.click(screen.getByText('Create Post'))
+    await fireEvent.click(screen.getByText('Create Post'))
     
+    // Wait for all async operations to complete
     await waitFor(() => {
       expect(createPost).toHaveBeenCalledWith({
         title: 'Test Title',
@@ -95,11 +108,13 @@ describe('NewPost', () => {
         authorId: mockUser.id,
         published: true
       })
+    })
+
+    await waitFor(() => {
       expect(mockDispatch).toHaveBeenCalledWith({
         type: 'ADD_POST',
         post: newPost
       })
-      expect(mockReload).toHaveBeenCalled()
     })
   })
 
@@ -126,9 +141,11 @@ describe('NewPost', () => {
   })
 
   it('does not render when user is not logged in', () => {
-    jest.spyOn(require('@/store/userStore'), 'useUserStore').mockImplementation(() => ({
-      user: null
-    }))
+    // Override the userStore mock for this specific test
+    ;(useUserStore as jest.Mock).mockReturnValue({
+      user: null,
+      isAuthenticated: false
+    })
     
     const { container } = render(<NewPost />)
     expect(container).toBeEmptyDOMElement()

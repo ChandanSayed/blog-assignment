@@ -61,11 +61,11 @@ export default async function UserPosts({
     const totalPages = Math.ceil(totalPosts / pageSize)
 
     return (
-      <div className="container mx-auto px-4 py-12">
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">{user.name}&apos;s Posts</h1>
-          <p className="text-gray-600">Total posts: {totalPosts}</p>
-        </div>
+      <main className="container mx-auto px-2 md:px-4">
+        <h1 className="text-xl md:text-2xl font-bold mb-4">
+          {user.name}&apos;s Posts
+        </h1>
+        <p className="text-gray-600">Total posts: {totalPosts}</p>
 
         {posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -87,7 +87,7 @@ export default async function UserPosts({
         {totalPages > 1 && (
           <Pagination currentPage={page} totalPages={totalPages} />
         )}
-      </div>
+      </main>
     )
   } catch (error) {
     console.error('Error fetching user posts:', error)

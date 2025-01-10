@@ -31,7 +31,7 @@ jest.mock('@/lib/prisma', () => ({
 
 // Mock BlogPost component
 jest.mock('@/app/components/BlogPost', () => ({
-  BlogPost: ({ post }: any) => (
+  BlogPost: ({ post }: { post: { id: number; title: string; content: string; author: { name: string } } }) => (
     <article data-testid={`post-${post.id}`}>
       <h2>{post.title}</h2>
       <p>{post.content}</p>
@@ -105,7 +105,7 @@ describe('UserPosts Page', () => {
 
     try {
       await UserPosts({ params: { id: '1' }, searchParams: {} })
-    } catch (error) {
+    } catch {
       // Expect redirect to have been called
       expect(redirect).toHaveBeenCalledWith('/login')
     }
@@ -119,7 +119,7 @@ describe('UserPosts Page', () => {
 
     try {
       await UserPosts({ params: { id: '1' }, searchParams: {} })
-    } catch (error) {
+    } catch  {
       // Expect redirect to have been called
       expect(redirect).toHaveBeenCalledWith('/login')
     }
