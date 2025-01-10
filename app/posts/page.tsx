@@ -28,10 +28,10 @@ export default async function Posts({
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-4xl font-bold">All Blog Posts</h1>
+          <h1 className="text-2xl sm:text-4xl font-bold">All Blog Posts</h1>
           <Link
             href="/posts/create"
-            className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+            className="bg-blue-500 text-white px-3 text-sm sm:text-base sm:px-6 py-2 rounded hover:bg-blue-600"
           >
             Create New Post
           </Link>

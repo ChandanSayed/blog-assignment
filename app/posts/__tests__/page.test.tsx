@@ -3,6 +3,14 @@ import { render, screen, within } from '@testing-library/react'
 import Posts from '../page'
 import { prisma } from '@/lib/prisma'
 
+// Mock useRouter
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(() => ({
+    push: jest.fn(),
+    back: jest.fn()
+  }))
+}))
+
 // Mock userStore
 jest.mock('@/store/userStore', () => ({
   useUserStore: () => ({

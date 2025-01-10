@@ -14,7 +14,7 @@ export default async function Home() {
     <main>
       <Banner />
       <div className="container mx-auto px-4 py-12">
-        <h2 className="text-3xl font-bold mb-8">Recent Posts</h2>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-8">Recent Posts</h2>
         {posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {posts.map((post) => (
