@@ -21,7 +21,8 @@ export default function CreatePost() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    // Only redirect if explicitly not authenticated
+    if (isAuthenticated === false) {
       router.replace('/login')
     }
   }, [isAuthenticated, router])
@@ -98,8 +99,8 @@ export default function CreatePost() {
     }
   }
 
-  if (!user) {
-    router.push('/login')
+  // Only redirect if we know for sure there's no user
+  if (isAuthenticated === false) {
     return null
   }
 
