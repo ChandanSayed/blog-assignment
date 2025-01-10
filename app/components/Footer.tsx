@@ -93,7 +93,7 @@ export function Footer() {
             <ul className="space-y-2 text-gray-300">
               <li>Email: contact@blogapp.com</li>
               <li>Twitter: @blogapp</li>
-              <li>GitHub: github.com/blogapp</li>
+              <li>GitHub: https://github.com/ChandanSayed/</li>
             </ul>
           </div>
         </div>

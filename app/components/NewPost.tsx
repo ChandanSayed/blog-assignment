@@ -47,30 +47,39 @@ export function NewPost() {
   if (!user) return null
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md">
+    <form 
+      onSubmit={handleSubmit} 
+      className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-md"
+    >
       <h2 className="text-2xl font-bold mb-6">Create New Post</h2>
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4" role="alert">
           {error}
         </div>
       )}
       <div className="mb-4">
-        <input
+        <label htmlFor="title" className="sr-only">Title</label>
+        <input 
+          id="title"
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           placeholder="Post title"
           className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
           required
+          aria-required="true"
         />
       </div>
       <div className="mb-4">
+        <label htmlFor="content" className="sr-only">Content</label>
         <textarea
+          id="content"
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write your post content..."
           className="w-full p-2 border rounded h-32 focus:ring-2 focus:ring-blue-500"
           required
+          aria-required="true"
         />
       </div>
       <button
