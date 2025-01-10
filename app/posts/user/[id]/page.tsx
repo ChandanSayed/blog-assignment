@@ -61,18 +61,18 @@ export default async function UserPosts({
     const totalPages = Math.ceil(totalPosts / pageSize)
 
     return (
-      <main className="container mx-auto px-2 md:px-4">
-        <h1 className="text-xl md:text-2xl font-bold mb-4">
+      <main className="container mx-auto px-2 md:px-4 py-8">
+        <h1 className="text-xl md:text-2xl font-bold mb-6">
           {user.name}&apos;s Posts
         </h1>
-        <p className="text-gray-600">Total posts: {totalPosts}</p>
+        <p className="text-gray-600 mb-8">Total posts: {totalPosts}</p>
 
         {posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <BlogPost 
-                key={post.id} 
-                post={post} 
+              <BlogPost
+                key={post.id}
+                post={post}
                 isEditable={true}
                 showActions={true}
               />
@@ -85,7 +85,9 @@ export default async function UserPosts({
         )}
 
         {totalPages > 1 && (
-          <Pagination currentPage={page} totalPages={totalPages} />
+          <div className="mt-12">
+            <Pagination currentPage={page} totalPages={totalPages} />
+          </div>
         )}
       </main>
     )

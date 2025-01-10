@@ -4,6 +4,7 @@ import { BlogPost } from '../BlogPost'
 import { useRouter } from 'next/navigation'
 import { useUserStore } from '@/store/userStore'
 import { useBlogStore } from '@/store/blogStore'
+import { deletePost } from '@/lib/blog'
 
 // Mock modules
 jest.mock('next/navigation', () => ({
@@ -17,6 +18,11 @@ jest.mock('@/store/blogStore', () => ({
 
 jest.mock('@/store/userStore', () => ({
   useUserStore: jest.fn()
+}))
+
+// Add mock for deletePost
+jest.mock('@/lib/blog', () => ({
+  deletePost: jest.fn()
 }))
 
 describe('BlogPost', () => {
@@ -76,24 +82,37 @@ describe('BlogPost', () => {
     expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
   })
 
-  it('navigates to edit page when edit button is clicked', () => {
+  it('enters edit mode when edit button is clicked', () => {
     render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
     
+    // Click edit button
     fireEvent.click(screen.getByRole('button', { name: /edit/i }))
     
-    expect(mockRouter.push).toHaveBeenCalledWith(`/posts/${mockPost.id}/edit`)
+    // Verify edit mode is active
+    expect(screen.getByPlaceholderText('Post title')).toBeInTheDocument()
+    expect(screen.getByPlaceholderText('Write your post content here...')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument()
   })
 
-  it('deletes post when confirmed', () => {
+  it('deletes post when confirmed', async () => {
     window.confirm = jest.fn(() => true)
+    ;(deletePost as jest.Mock).mockResolvedValueOnce({})
     
     render(<BlogPost post={mockPost} isEditable={true} showActions={true} />)
     
-    fireEvent.click(screen.getByRole('button', { name: /delete/i }))
+    // Click delete button
+    await fireEvent.click(screen.getByRole('button', { name: /delete/i }))
     
-    expect(mockDispatch).toHaveBeenCalledWith({
-      type: 'DELETE_POST',
-      id: mockPost.id
+    // Wait for async operations to complete
+    await waitFor(() => {
+      expect(window.confirm).toHaveBeenCalled()
+      expect(deletePost).toHaveBeenCalledWith(mockPost.id)
+      expect(mockDispatch).toHaveBeenCalledWith({
+        type: 'DELETE_POST',
+        id: mockPost.id
+      })
+      expect(mockRouter.refresh).toHaveBeenCalled()
     })
   })
 
