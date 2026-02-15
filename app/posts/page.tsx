@@ -1,29 +1,38 @@
-import { BlogPost } from '@/app/components/BlogPost'
-import { prisma } from '@/lib/prisma'
-import { Pagination } from '@/app/components/Pagination'
-import Link from 'next/link'
+import { BlogPost } from "@/app/components/BlogPost";
+import { prisma } from "../../lib/prisma";
+import { Pagination } from "@/app/components/Pagination";
+import Link from "next/link";
+import { initializeDatabase } from "@/lib/initDb";
 
-export default async function Posts({
-  searchParams,
-}: {
-  searchParams: { page?: string }
-}) {
-  const page = Number(searchParams.page) || 1
-  const pageSize = 6
-  const skip = (page - 1) * pageSize
+export default async function Posts({ searchParams }: { searchParams: { page?: string } }) {
+  const page = Number(searchParams.page) || 1;
+  const pageSize = 6;
+  const skip = (page - 1) * pageSize;
 
   try {
-    const [posts, totalPosts] = await Promise.all([
+    await initializeDatabase();
+
+    const [posts, totalPosts] = await prisma.$transaction([
       prisma.post.findMany({
         include: { author: true },
         skip,
         take: pageSize,
-        orderBy: { id: 'desc' },
+        orderBy: { id: "desc" },
       }),
       prisma.post.count(),
-    ])
+    ]);
 
-    const totalPages = Math.ceil(totalPosts / pageSize)
+    const totalPages = Math.ceil(totalPosts / pageSize);
+
+    if (!posts || posts.length === 0) {
+      return (
+        <div className="container mx-auto px-4 py-12">
+          <div className="text-center">
+            <p className="text-gray-600">No posts found.</p>
+          </div>
+        </div>
+      );
+    }
 
     return (
       <div className="container mx-auto px-4 py-12">
@@ -36,48 +45,24 @@ export default async function Posts({
             Create New Post
           </Link>
         </div>
-        
+
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {posts.map((post) => (
-            <BlogPost 
-              key={post.id} 
-              post={post} 
-              isEditable={true}
-              showActions={false}
-            />
+          {posts.map(post => (
+            <BlogPost key={post.id} post={post} isEditable={true} showActions={true} />
           ))}
         </div>
-        {totalPages > 1 && (
-          <Pagination 
-            currentPage={page} 
-            totalPages={totalPages} 
-          />
-        )}
+        {totalPages > 1 && <Pagination currentPage={page} totalPages={totalPages} />}
       </div>
-    )
+    );
   } catch (error) {
-    console.error('Error fetching posts:', error)
-    // Log detailed error information
-    if (error instanceof Error) {
-      console.error('Error name:', error.name)
-      console.error('Error message:', error.message)
-      console.error('Error stack:', error.stack)
-    }
+    console.error("Error fetching posts:", error);
     return (
       <div className="container mx-auto px-4 py-12">
         <div className="text-center">
           <h1 className="text-4xl font-bold text-red-500 mb-4">Error</h1>
           <p className="text-gray-600">Failed to load posts. Please try again later.</p>
-          {process.env.NODE_ENV === 'development' && error instanceof Error && (
-            <div className="mt-4 p-4 bg-red-100 rounded text-left">
-              <p className="font-mono text-sm text-red-700">{error.message}</p>
-              <pre className="mt-2 whitespace-pre-wrap font-mono text-xs text-red-600">
-                {error.stack}
-              </pre>
-            </div>
-          )}
         </div>
       </div>
-    )
+    );
   }
-} 
+}

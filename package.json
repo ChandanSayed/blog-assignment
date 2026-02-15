@@ -3,12 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "npm run db:prepare && next build",
+    "dev": "prisma generate && next dev",
+    "build": "prisma generate && prisma db push && next build",
     "start": "next start",
     "lint": "next lint",
-    "db:prepare": "prisma generate && prisma migrate deploy && prisma db push",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:seed": "tsx prisma/seed.ts",
+    "db:reset": "del /f prisma\\dev.db prisma\\dev.db-journal 2>nul && npm run prisma:push && npm run prisma:seed"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
@@ -17,7 +21,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-react": "^0.469.0",
-    "next": "14.2.16",
+    "next": "^16.1.6",
     "react": "^18",
     "react-dom": "^18",
     "tailwind-merge": "^2.6.0",
@@ -39,7 +43,7 @@
     "@types/react-dom": "^18",
     "babel-jest": "^29.7.0",
     "eslint": "^8",
-    "eslint-config-next": "14.2.16",
+    "eslint-config-next": "^16.1.6",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8",
